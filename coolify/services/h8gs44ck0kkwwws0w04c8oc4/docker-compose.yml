@@ -1,0 +1,65 @@
+services:
+  portainer:
+    image: 'portainer/portainer-ce:alpine'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - 'h8gs44ck0kkwwws0w04c8oc4_portainer-data:/data'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'wget -qO- http://127.0.0.1:9000/'
+      interval: 20s
+      timeout: 20s
+      retries: 10
+    container_name: portainer-h8gs44ck0kkwwws0w04c8oc4
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=4
+      - coolify.type=service
+      - coolify.name=portainer-h8gs44ck0kkwwws0w04c8oc4
+      - coolify.resourceName=portainer-h8gs44ck0kkwwws0w04c8oc4
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=portainer
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=6
+      - coolify.service.subType=application
+      - coolify.service.subName=portainer
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-h8gs44ck0kkwwws0w04c8oc4-portainer.entryPoints=http
+      - traefik.http.routers.http-0-h8gs44ck0kkwwws0w04c8oc4-portainer.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-h8gs44ck0kkwwws0w04c8oc4-portainer.rule=Host(`portainer.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-h8gs44ck0kkwwws0w04c8oc4-portainer.entryPoints=https
+      - traefik.http.routers.https-0-h8gs44ck0kkwwws0w04c8oc4-portainer.middlewares=gzip
+      - 'traefik.http.routers.https-0-h8gs44ck0kkwwws0w04c8oc4-portainer.rule=Host(`portainer.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-h8gs44ck0kkwwws0w04c8oc4-portainer.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-h8gs44ck0kkwwws0w04c8oc4-portainer.tls=true
+      - traefik.http.services.https-0-h8gs44ck0kkwwws0w04c8oc4-portainer.loadbalancer.server.port=9000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 9000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://portainer.appexx.me'
+      - caddy_ingress_network=h8gs44ck0kkwwws0w04c8oc4
+    networks:
+      h8gs44ck0kkwwws0w04c8oc4: null
+    environment:
+      COOLIFY_RESOURCE_UUID: h8gs44ck0kkwwws0w04c8oc4
+      COOLIFY_CONTAINER_NAME: portainer-h8gs44ck0kkwwws0w04c8oc4
+      COOLIFY_FQDN: portainer.appexx.me
+      COOLIFY_URL: 'https://portainer.appexx.me'
+      SERVICE_NAME_PORTAINER: portainer
+    env_file:
+      - .env
+volumes:
+  h8gs44ck0kkwwws0w04c8oc4_portainer-data:
+    name: h8gs44ck0kkwwws0w04c8oc4_portainer-data
+networks:
+  h8gs44ck0kkwwws0w04c8oc4:
+    name: h8gs44ck0kkwwws0w04c8oc4
+    external: true

@@ -1,0 +1,153 @@
+services:
+  typebot-builder:
+    image: 'baptistearno/typebot-builder:latest'
+    restart: always
+    labels:
+      - traefik.docker.network=a080c4gg8ssww4wc044o8s4o
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=11
+      - coolify.type=service
+      - coolify.name=typebot-builder-v4o0wss4kg4w0gwsk00wc444
+      - coolify.resourceName=service-nc0ks0oggcok0s0koocgc0ws
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=typebot-builder
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=16
+      - coolify.service.subType=application
+      - coolify.service.subName=typebot-builder
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.entryPoints=http
+      - traefik.http.routers.http-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.rule=Host(`typebot.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.service=http-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder
+      - traefik.http.routers.https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.entryPoints=https
+      - traefik.http.routers.https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.middlewares=gzip
+      - 'traefik.http.routers.https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.rule=Host(`typebot.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.service=https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder
+      - traefik.http.routers.https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.tls=true
+      - traefik.http.services.http-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.loadbalancer.server.port=3000
+      - traefik.http.services.https-0-v4o0wss4kg4w0gwsk00wc444-typebot-builder.loadbalancer.server.port=3000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://typebot.appexx.me'
+      - caddy_ingress_network=v4o0wss4kg4w0gwsk00wc444
+    environment:
+      DATABASE_URL: 'postgresql://typebot:typebot-password@typebot-db:5432/typebot'
+      NEXTAUTH_URL: 'https://typebot.appexx.me'
+      NEXT_PUBLIC_VIEWER_URL: 'https://typebot-viewer.appexx.me'
+      ENCRYPTION_SECRET: /+A12Ls7w8R/UCcw6lfPt/5OWDT6SgRm
+      NEXTAUTH_SECRET: j3dUQhiaVrDQ2iA+GlrdHu+IsBiKBR50N+tSrCJFh6s=
+      DISABLE_SIGNUP: 'false'
+      COOLIFY_RESOURCE_UUID: v4o0wss4kg4w0gwsk00wc444
+      COOLIFY_CONTAINER_NAME: typebot-builder-v4o0wss4kg4w0gwsk00wc444
+      COOLIFY_FQDN: typebot.appexx.me
+      COOLIFY_URL: 'https://typebot.appexx.me'
+      SERVICE_NAME_TYPEBOT_BUILDER: typebot-builder
+      SERVICE_NAME_TYPEBOT_VIEWER: typebot-viewer
+      SERVICE_NAME_TYPEBOT_DB: typebot-db
+    depends_on:
+      typebot-db:
+        condition: service_healthy
+    networks:
+      coolify: null
+      v4o0wss4kg4w0gwsk00wc444: null
+    container_name: typebot-builder-v4o0wss4kg4w0gwsk00wc444
+    env_file:
+      - .env
+  typebot-viewer:
+    image: 'baptistearno/typebot-viewer:latest'
+    restart: always
+    labels:
+      - traefik.docker.network=a080c4gg8ssww4wc044o8s4o
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=11
+      - coolify.type=service
+      - coolify.name=typebot-viewer-v4o0wss4kg4w0gwsk00wc444
+      - coolify.resourceName=service-nc0ks0oggcok0s0koocgc0ws
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=typebot-viewer
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=17
+      - coolify.service.subType=application
+      - coolify.service.subName=typebot-viewer
+    environment:
+      DATABASE_URL: 'postgresql://typebot:typebot-password@typebot-db:5432/typebot'
+      NEXT_PUBLIC_VIEWER_URL: 'https://typebot-viewer.appexx.me'
+      NEXTAUTH_URL: 'https://typebot.appexx.me'
+      ENCRYPTION_SECRET: /+A12Ls7w8R/UCcw6lfPt/5OWDT6SgRm
+      COOLIFY_RESOURCE_UUID: v4o0wss4kg4w0gwsk00wc444
+      COOLIFY_CONTAINER_NAME: typebot-viewer-v4o0wss4kg4w0gwsk00wc444
+      SERVICE_NAME_TYPEBOT_BUILDER: typebot-builder
+      SERVICE_NAME_TYPEBOT_VIEWER: typebot-viewer
+      SERVICE_NAME_TYPEBOT_DB: typebot-db
+    depends_on:
+      typebot-db:
+        condition: service_healthy
+    networks:
+      coolify: null
+      v4o0wss4kg4w0gwsk00wc444: null
+    container_name: typebot-viewer-v4o0wss4kg4w0gwsk00wc444
+    env_file:
+      - .env
+  typebot-db:
+    image: 'postgres:16-alpine'
+    restart: always
+    environment:
+      POSTGRES_USER: typebot
+      POSTGRES_PASSWORD: typebot-password
+      POSTGRES_DB: typebot
+      COOLIFY_RESOURCE_UUID: v4o0wss4kg4w0gwsk00wc444
+      COOLIFY_CONTAINER_NAME: typebot-db-v4o0wss4kg4w0gwsk00wc444
+      SERVICE_NAME_TYPEBOT_BUILDER: typebot-builder
+      SERVICE_NAME_TYPEBOT_VIEWER: typebot-viewer
+      SERVICE_NAME_TYPEBOT_DB: typebot-db
+    volumes:
+      - 'v4o0wss4kg4w0gwsk00wc444_typebot-db-data:/var/lib/postgresql/data'
+    networks:
+      coolify: null
+      v4o0wss4kg4w0gwsk00wc444: null
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U typebot -d typebot'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: typebot-db-v4o0wss4kg4w0gwsk00wc444
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=11
+      - coolify.type=service
+      - coolify.name=typebot-db-v4o0wss4kg4w0gwsk00wc444
+      - coolify.resourceName=service-nc0ks0oggcok0s0koocgc0ws
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=typebot-db
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=7
+      - coolify.service.subType=database
+      - coolify.service.subName=typebot-db
+    env_file:
+      - .env
+volumes:
+  typebot-db-data:
+    external: false
+  v4o0wss4kg4w0gwsk00wc444_typebot-db-data:
+    name: v4o0wss4kg4w0gwsk00wc444_typebot-db-data
+networks:
+  coolify:
+    external: true
+  v4o0wss4kg4w0gwsk00wc444:
+    name: v4o0wss4kg4w0gwsk00wc444
+    external: true

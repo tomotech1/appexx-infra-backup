@@ -1,0 +1,228 @@
+services:
+  postiz:
+    image: 'ghcr.io/gitroomhq/postiz-app:v2.10.1'
+    environment:
+      SERVICE_URL_POSTIZ_5000: 'https://postiz.appexx.me:5000'
+      MAIN_URL: '${SERVICE_URL_POSTIZ}'
+      FRONTEND_URL: '${SERVICE_URL_POSTIZ}'
+      NEXT_PUBLIC_BACKEND_URL: '${SERVICE_URL_POSTIZ}/api'
+      JWT_SECRET: '${SERVICE_PASSWORD_JWTSECRET}'
+      DATABASE_URL: 'postgresql://postgres:${SERVICE_PASSWORD_POSTGRESQL}@postgres:5432/${POSTGRESQL_DATABASE:-postiz-db}'
+      REDIS_URL: 'redis://default:${SERVICE_PASSWORD_REDIS}@redis:6379'
+      BACKEND_INTERNAL_URL: 'http://localhost:3000'
+      CLOUDFLARE_ACCOUNT_ID: '${CLOUDFLARE_ACCOUNT_ID}'
+      CLOUDFLARE_ACCESS_KEY: '${CLOUDFLARE_ACCESS_KEY}'
+      CLOUDFLARE_SECRET_ACCESS_KEY: '${CLOUDFLARE_SECRET_ACCESS_KEY}'
+      CLOUDFLARE_BUCKETNAME: '${CLOUDFLARE_BUCKETNAME}'
+      CLOUDFLARE_BUCKET_URL: '${CLOUDFLARE_BUCKET_URL}'
+      CLOUDFLARE_REGION: '${CLOUDFLARE_REGION}'
+      STORAGE_PROVIDER: '${STORAGE_PROVIDER:-local}'
+      UPLOAD_DIRECTORY: '${UPLOAD_DIRECTORY:-/uploads}'
+      NEXT_PUBLIC_UPLOAD_DIRECTORY: '${NEXT_PUBLIC_UPLOAD_DIRECTORY:-/uploads}'
+      NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY: '${NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY}'
+      RESEND_API_KEY: '${RESEND_API_KEY}'
+      EMAIL_FROM_ADDRESS: '${EMAIL_FROM_ADDRESS}'
+      EMAIL_FROM_NAME: '${EMAIL_FROM_NAME}'
+      EMAIL_PROVIDER: '${EMAIL_PROVIDER}'
+      X_API_KEY: '${SERVICE_X_API}'
+      X_API_SECRET: '${SERVICE_X_SECRET}'
+      LINKEDIN_CLIENT_ID: '${SERVICE_LINKEDIN_ID}'
+      LINKEDIN_CLIENT_SECRET: '${SERVICE_LINKEDIN_SECRET}'
+      REDDIT_CLIENT_ID: '${SERVICE_REDDIT_API}'
+      REDDIT_CLIENT_SECRET: '${SERVICE_REDDIT_SECRET}'
+      GITHUB_CLIENT_ID: '${SERVICE_GITHUB_ID}'
+      GITHUB_CLIENT_SECRET: '${SERVICE_GITHUB_SECRET}'
+      THREADS_APP_ID: '${SERVICE_THREADS_ID}'
+      THREADS_APP_SECRET: '${SERVICE_THREADS_SECRET}'
+      FACEBOOK_APP_ID: '${SERVICE_FACEBOOK_ID}'
+      FACEBOOK_APP_SECRET: '${SERVICE_FACEBOOK_SECRET}'
+      YOUTUBE_CLIENT_ID: '${SERVICE_YOUTUBE_ID}'
+      YOUTUBE_CLIENT_SECRET: '${SERVICE_YOUTUBE_SECRET}'
+      TIKTOK_CLIENT_ID: '${SERVICE_TIKTOK_ID}'
+      TIKTOK_CLIENT_SECRET: '${SERVICE_TIKTOK_SECRET}'
+      PINTEREST_CLIENT_ID: '${SERVICE_PINTEREST_ID}'
+      PINTEREST_CLIENT_SECRET: '${SERVICE_PINTEREST_SECRET}'
+      DRIBBBLE_CLIENT_ID: '${SERVICE_DRIBBLE_ID}'
+      DRIBBBLE_CLIENT_SECRET: '${SERVICE_DRIBBLE_SECRET}'
+      DISCORD_CLIENT_ID: '${SERVICE_DISCORD_ID}'
+      DISCORD_CLIENT_SECRET: '${SERVICE_DISCORD_SECRET}'
+      DISCORD_BOT_TOKEN_ID: '${SERVICE_DISCORD_TOKEN}'
+      SLACK_ID: '${SERVICE_SLACK_ID}'
+      SLACK_SECRET: '${SERVICE_SLACK_SECRET}'
+      SLACK_SIGNING_SECRET: '${SLACK_SIGNING_SECRET}'
+      MASTODON_CLIENT_ID: '${SERVICE_MASTODON_ID}'
+      MASTODON_CLIENT_SECRET: '${SERVICE_MASTODON_SECRET}'
+      INSTAGRAM_APP_ID: '${INSTAGRAM_APP_ID}'
+      INSTAGRAM_APP_SECRET: '${INSTAGRAM_APP_SECRET}'
+      BEEHIIVE_API_KEY: '${SERVICE_BEEHIIVE_KEY}'
+      BEEHIIVE_PUBLICATION_ID: '${SERVICE_BEEHIIVE_PUBID}'
+      OPENAI_API_KEY: '${SERVICE_OPENAI_KEY}'
+      NEXT_PUBLIC_DISCORD_SUPPORT: '${NEXT_PUBLIC_DISCORD_SUPPORT}'
+      NEXT_PUBLIC_POLOTNO: '${NEXT_PUBLIC_POLOTNO}'
+      IS_GENERAL: 'true'
+      NX_ADD_PLUGINS: '${NX_ADD_PLUGINS:-false}'
+      NOT_SECURED: '${NOT_SECURED:-false}'
+      FEE_AMOUNT: '${FEE_AMOUNT:-0.05}'
+      STRIPE_PUBLISHABLE_KEY: '${STRIPE_PUBLISHABLE_KEY}'
+      STRIPE_SECRET_KEY: '${STRIPE_SECRET_KEY}'
+      STRIPE_SIGNING_KEY: '${STRIPE_SIGNING_KEY}'
+      STRIPE_SIGNING_KEY_CONNECT: '${STRIPE_SIGNING_KEY_CONNECT}'
+      COOLIFY_RESOURCE_UUID: fkoggggo8k84ookk8coog8oc
+      COOLIFY_CONTAINER_NAME: postiz-fkoggggo8k84ookk8coog8oc
+      COOLIFY_FQDN: postiz.appexx.me
+      COOLIFY_URL: 'https://postiz.appexx.me'
+      SERVICE_NAME_POSTIZ: postiz
+      SERVICE_NAME_POSTGRES: postgres
+      SERVICE_NAME_REDIS: redis
+    volumes:
+      - 'fkoggggo8k84ookk8coog8oc_postiz-config:/config/'
+      - 'fkoggggo8k84ookk8coog8oc_postiz-uploads:/uploads/'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'wget -qO- http://127.0.0.1:5000/'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: postiz-fkoggggo8k84ookk8coog8oc
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=6
+      - coolify.type=service
+      - coolify.name=postiz-fkoggggo8k84ookk8coog8oc
+      - coolify.resourceName=postiz-fkoggggo8k84ookk8coog8oc
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=postiz
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=9
+      - coolify.service.subType=application
+      - coolify.service.subName=postiz
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-fkoggggo8k84ookk8coog8oc-postiz.entryPoints=http
+      - traefik.http.routers.http-0-fkoggggo8k84ookk8coog8oc-postiz.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-fkoggggo8k84ookk8coog8oc-postiz.rule=Host(`postiz.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-fkoggggo8k84ookk8coog8oc-postiz.service=http-0-fkoggggo8k84ookk8coog8oc-postiz
+      - traefik.http.routers.https-0-fkoggggo8k84ookk8coog8oc-postiz.entryPoints=https
+      - traefik.http.routers.https-0-fkoggggo8k84ookk8coog8oc-postiz.middlewares=gzip
+      - 'traefik.http.routers.https-0-fkoggggo8k84ookk8coog8oc-postiz.rule=Host(`postiz.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-fkoggggo8k84ookk8coog8oc-postiz.service=https-0-fkoggggo8k84ookk8coog8oc-postiz
+      - traefik.http.routers.https-0-fkoggggo8k84ookk8coog8oc-postiz.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-fkoggggo8k84ookk8coog8oc-postiz.tls=true
+      - traefik.http.services.http-0-fkoggggo8k84ookk8coog8oc-postiz.loadbalancer.server.port=5000
+      - traefik.http.services.https-0-fkoggggo8k84ookk8coog8oc-postiz.loadbalancer.server.port=5000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 5000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://postiz.appexx.me'
+      - caddy_ingress_network=fkoggggo8k84ookk8coog8oc
+    networks:
+      fkoggggo8k84ookk8coog8oc: null
+    env_file:
+      - .env
+  postgres:
+    image: 'postgres:14.5'
+    volumes:
+      - 'fkoggggo8k84ookk8coog8oc_postiz-postgresql-data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      POSTGRES_DB: '${POSTGRESQL_DATABASE:-postiz-db}'
+      COOLIFY_RESOURCE_UUID: fkoggggo8k84ookk8coog8oc
+      COOLIFY_CONTAINER_NAME: postgres-fkoggggo8k84ookk8coog8oc
+      SERVICE_NAME_POSTIZ: postiz
+      SERVICE_NAME_POSTGRES: postgres
+      SERVICE_NAME_REDIS: redis
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB:-postiz-db}'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: postgres-fkoggggo8k84ookk8coog8oc
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=6
+      - coolify.type=service
+      - coolify.name=postgres-fkoggggo8k84ookk8coog8oc
+      - coolify.resourceName=postiz-fkoggggo8k84ookk8coog8oc
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=postgres
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=2
+      - coolify.service.subType=database
+      - coolify.service.subName=postgres
+    networks:
+      fkoggggo8k84ookk8coog8oc: null
+    env_file:
+      - .env
+  redis:
+    image: 'redis:7.2'
+    environment:
+      REDIS_PASSWORD: '${SERVICE_PASSWORD_REDIS}'
+      COOLIFY_RESOURCE_UUID: fkoggggo8k84ookk8coog8oc
+      COOLIFY_CONTAINER_NAME: redis-fkoggggo8k84ookk8coog8oc
+      SERVICE_NAME_POSTIZ: postiz
+      SERVICE_NAME_POSTGRES: postgres
+      SERVICE_NAME_REDIS: redis
+    command: 'redis-server --requirepass ${SERVICE_PASSWORD_REDIS}'
+    volumes:
+      - 'fkoggggo8k84ookk8coog8oc_postiz-redis-data:/data'
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - '-a'
+        - '${SERVICE_PASSWORD_REDIS}'
+        - ping
+      interval: 5s
+      timeout: 10s
+      retries: 20
+    container_name: redis-fkoggggo8k84ookk8coog8oc
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=6
+      - coolify.type=service
+      - coolify.name=redis-fkoggggo8k84ookk8coog8oc
+      - coolify.resourceName=postiz-fkoggggo8k84ookk8coog8oc
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=3
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+    networks:
+      fkoggggo8k84ookk8coog8oc: null
+    env_file:
+      - .env
+volumes:
+  fkoggggo8k84ookk8coog8oc_postiz-config:
+    name: fkoggggo8k84ookk8coog8oc_postiz-config
+  fkoggggo8k84ookk8coog8oc_postiz-uploads:
+    name: fkoggggo8k84ookk8coog8oc_postiz-uploads
+  fkoggggo8k84ookk8coog8oc_postiz-postgresql-data:
+    name: fkoggggo8k84ookk8coog8oc_postiz-postgresql-data
+  fkoggggo8k84ookk8coog8oc_postiz-redis-data:
+    name: fkoggggo8k84ookk8coog8oc_postiz-redis-data
+networks:
+  fkoggggo8k84ookk8coog8oc:
+    name: fkoggggo8k84ookk8coog8oc
+    external: true

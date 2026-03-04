@@ -1,0 +1,78 @@
+services:
+  crawl4ai:
+    image: 'unclecode/crawl4ai:latest'
+    container_name: crawl4ai-ugcks0c0s88ccgscocsgo8o8
+    restart: always
+    environment:
+      MAX_CONCURRENT_TASKS: '5'
+      COOLIFY_RESOURCE_UUID: ugcks0c0s88ccgscocsgo8o8
+      COOLIFY_CONTAINER_NAME: crawl4ai-ugcks0c0s88ccgscocsgo8o8
+      COOLIFY_FQDN: crawl4.appexx.me
+      COOLIFY_URL: 'https://crawl4.appexx.me'
+      SERVICE_NAME_CRAWL4AI: crawl4ai
+    shm_size: 3gb
+    volumes:
+      - 'ugcks0c0s88ccgscocsgo8o8_crawl4ai-data:/root/.crawl4ai'
+    networks:
+      coolify: null
+      ugcks0c0s88ccgscocsgo8o8: null
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.crawl4ai.rule=Host(`crawl4.appexx.me`)
+      - traefik.http.routers.crawl4ai.entrypoints=https
+      - traefik.http.routers.crawl4ai.tls=true
+      - traefik.http.routers.crawl4ai.tls.certresolver=letsencrypt
+      - traefik.http.services.crawl4ai.loadbalancer.server.port=11235
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=7
+      - coolify.type=service
+      - coolify.name=crawl4ai-ugcks0c0s88ccgscocsgo8o8
+      - coolify.resourceName=service-d808k4ogssos4c4wo8woo4gw
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=crawl4ai
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=10
+      - coolify.service.subType=application
+      - coolify.service.subName=crawl4ai
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.entryPoints=http
+      - traefik.http.routers.http-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.rule=Host(`crawl4.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.entryPoints=https
+      - traefik.http.routers.https-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.middlewares=gzip
+      - 'traefik.http.routers.https-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.rule=Host(`crawl4.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-ugcks0c0s88ccgscocsgo8o8-crawl4ai.tls=true
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://crawl4.appexx.me'
+      - caddy_ingress_network=ugcks0c0s88ccgscocsgo8o8
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://localhost:11235/health'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    env_file:
+      - .env
+volumes:
+  crawl4ai-data:
+    external: false
+  ugcks0c0s88ccgscocsgo8o8_crawl4ai-data:
+    name: ugcks0c0s88ccgscocsgo8o8_crawl4ai-data
+networks:
+  coolify:
+    external: true
+  ugcks0c0s88ccgscocsgo8o8:
+    name: ugcks0c0s88ccgscocsgo8o8
+    external: true

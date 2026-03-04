@@ -1,0 +1,73 @@
+services:
+  docuseal:
+    image: 'docuseal/docuseal:latest'
+    restart: always
+    environment:
+      HOST: docuseal.appexx.me
+      FORCE_SSL: 'false'
+      COOLIFY_RESOURCE_UUID: y884s4ck840owc8kckcckwsg
+      COOLIFY_CONTAINER_NAME: docuseal-y884s4ck840owc8kckcckwsg
+      COOLIFY_FQDN: docuseal.appexx.me
+      COOLIFY_URL: 'https://docuseal.appexx.me'
+      SERVICE_NAME_DOCUSEAL: docuseal
+    volumes:
+      - 'y884s4ck840owc8kckcckwsg_docuseal-data:/data'
+    networks:
+      coolify: null
+      y884s4ck840owc8kckcckwsg: null
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - '-q'
+        - '--spider'
+        - 'http://127.0.0.1:3000'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: docuseal-y884s4ck840owc8kckcckwsg
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=10
+      - coolify.type=service
+      - coolify.name=docuseal-y884s4ck840owc8kckcckwsg
+      - coolify.resourceName=docuseal-y884s4ck840owc8kckcckwsg
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=docuseal
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=15
+      - coolify.service.subType=application
+      - coolify.service.subName=docuseal
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-y884s4ck840owc8kckcckwsg-docuseal.entryPoints=http
+      - traefik.http.routers.http-0-y884s4ck840owc8kckcckwsg-docuseal.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-y884s4ck840owc8kckcckwsg-docuseal.rule=Host(`docuseal.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-y884s4ck840owc8kckcckwsg-docuseal.entryPoints=https
+      - traefik.http.routers.https-0-y884s4ck840owc8kckcckwsg-docuseal.middlewares=gzip
+      - 'traefik.http.routers.https-0-y884s4ck840owc8kckcckwsg-docuseal.rule=Host(`docuseal.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-y884s4ck840owc8kckcckwsg-docuseal.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-y884s4ck840owc8kckcckwsg-docuseal.tls=true
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://docuseal.appexx.me'
+      - caddy_ingress_network=y884s4ck840owc8kckcckwsg
+    env_file:
+      - .env
+volumes:
+  docuseal-data:
+    external: false
+  y884s4ck840owc8kckcckwsg_docuseal-data:
+    name: y884s4ck840owc8kckcckwsg_docuseal-data
+networks:
+  coolify:
+    external: true
+  y884s4ck840owc8kckcckwsg:
+    name: y884s4ck840owc8kckcckwsg
+    external: true

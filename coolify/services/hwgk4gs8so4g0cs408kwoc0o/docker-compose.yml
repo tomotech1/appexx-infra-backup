@@ -1,0 +1,127 @@
+services:
+  authentik-server:
+    image: 'ghcr.io/goauthentik/server:2025.2.1'
+    restart: unless-stopped
+    command: server
+    container_name: authentik-server-hwgk4gs8so4g0cs408kwoc0o
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: '${SERVICE_USER_POSTGRESQL}'
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      AUTHENTIK_SECRET_KEY: '${SERVICE_PASSWORD_64_AUTHENTIKSERVER}'
+      AUTHENTIK_ERROR_REPORTING__ENABLED: 'false'
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_HOST: 'https://authentik.appexx.me'
+      COOLIFY_RESOURCE_UUID: hwgk4gs8so4g0cs408kwoc0o
+      COOLIFY_CONTAINER_NAME: authentik-server-hwgk4gs8so4g0cs408kwoc0o
+      COOLIFY_FQDN: authentik.appexx.me
+      COOLIFY_URL: 'https://authentik.appexx.me'
+    volumes:
+      - 'hwgk4gs8so4g0cs408kwoc0o_authentik-media:/media'
+      - 'hwgk4gs8so4g0cs408kwoc0o_authentik-templates:/templates'
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.entryPoints=http
+      - traefik.http.routers.http-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.rule=Host(`authentik.appexx.me`)'
+      - traefik.http.routers.https-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.entryPoints=https
+      - traefik.http.routers.https-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.middlewares=gzip
+      - 'traefik.http.routers.https-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.rule=Host(`authentik.appexx.me`)'
+      - traefik.http.routers.https-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.tls=true
+      - traefik.http.routers.https-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.tls.certresolver=letsencrypt
+      - traefik.http.services.https-0-hwgk4gs8so4g0cs408kwoc0o-authentik-server.loadbalancer.server.port=9000
+    networks:
+      hwgk4gs8so4g0cs408kwoc0o: null
+      coolify: null
+    env_file:
+      - .env
+
+  authentik-worker:
+    image: 'ghcr.io/goauthentik/server:2025.2.1'
+    restart: unless-stopped
+    command: worker
+    container_name: authentik-worker-hwgk4gs8so4g0cs408kwoc0o
+    user: root
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: '${SERVICE_USER_POSTGRESQL}'
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      AUTHENTIK_SECRET_KEY: '${SERVICE_PASSWORD_64_AUTHENTIKSERVER}'
+      AUTHENTIK_ERROR_REPORTING__ENABLED: 'false'
+      AUTHENTIK_REDIS__HOST: redis
+      COOLIFY_RESOURCE_UUID: hwgk4gs8so4g0cs408kwoc0o
+      COOLIFY_CONTAINER_NAME: authentik-worker-hwgk4gs8so4g0cs408kwoc0o
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - 'hwgk4gs8so4g0cs408kwoc0o_authentik-media:/media'
+      - 'hwgk4gs8so4g0cs408kwoc0o_authentik-certs:/certs'
+      - 'hwgk4gs8so4g0cs408kwoc0o_authentik-templates:/templates'
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      hwgk4gs8so4g0cs408kwoc0o: null
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    container_name: redis-hwgk4gs8so4g0cs408kwoc0o
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 10s
+      retries: 15
+    networks:
+      hwgk4gs8so4g0cs408kwoc0o: null
+
+  postgresql:
+    image: 'postgres:16-alpine'
+    restart: unless-stopped
+    container_name: postgresql-hwgk4gs8so4g0cs408kwoc0o
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}'
+      interval: 2s
+      timeout: 10s
+      retries: 15
+    volumes:
+      - 'hwgk4gs8so4g0cs408kwoc0o_authentik-db:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      POSTGRES_USER: '${SERVICE_USER_POSTGRESQL}'
+      POSTGRES_DB: authentik
+    networks:
+      hwgk4gs8so4g0cs408kwoc0o: null
+    env_file:
+      - .env
+
+volumes:
+  hwgk4gs8so4g0cs408kwoc0o_authentik-media:
+    name: hwgk4gs8so4g0cs408kwoc0o_authentik-media
+  hwgk4gs8so4g0cs408kwoc0o_authentik-templates:
+    name: hwgk4gs8so4g0cs408kwoc0o_authentik-templates
+  hwgk4gs8so4g0cs408kwoc0o_authentik-certs:
+    name: hwgk4gs8so4g0cs408kwoc0o_authentik-certs
+  hwgk4gs8so4g0cs408kwoc0o_authentik-db:
+    name: hwgk4gs8so4g0cs408kwoc0o_authentik-db
+
+networks:
+  hwgk4gs8so4g0cs408kwoc0o:
+    name: hwgk4gs8so4g0cs408kwoc0o
+    external: true
+  coolify:
+    external: true

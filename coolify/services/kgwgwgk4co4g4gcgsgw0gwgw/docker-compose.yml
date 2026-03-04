@@ -1,0 +1,123 @@
+services:
+  n8n:
+    image: 'n8nio/n8n:2.1.5'
+    environment:
+      N8N_EDITOR_BASE_URL: 'https://n8n.appexx.me/'
+      WEBHOOK_URL: 'https://n8n.appexx.me/'
+      N8N_HOST: n8n.appexx.me
+      N8N_PROTOCOL: https
+      GENERIC_TIMEZONE: Asia/Tokyo
+      TZ: Asia/Tokyo
+      DB_SQLITE_POOL_SIZE: '2'
+      N8N_RUNNERS_ENABLED: 'true'
+      N8N_RUNNERS_MODE: external
+      N8N_RUNNERS_BROKER_LISTEN_ADDRESS: 0.0.0.0
+      N8N_RUNNERS_BROKER_PORT: '5679'
+      N8N_RUNNERS_AUTH_TOKEN: '${SERVICE_PASSWORD_N8N}'
+      N8N_NATIVE_PYTHON_RUNNER: 'true'
+      N8N_RUNNERS_MAX_CONCURRENCY: '5'
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: 'true'
+      N8N_GIT_NODE_DISABLE_BARE_REPOS: 'true'
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'true'
+      N8N_PROXY_HOPS: '1'
+      N8N_SKIP_AUTH_ON_OAUTH_CALLBACK: 'false'
+      COOLIFY_RESOURCE_UUID: kgwgwgk4co4g4gcgsgw0gwgw
+      COOLIFY_CONTAINER_NAME: n8n-kgwgwgk4co4g4gcgsgw0gwgw
+      COOLIFY_FQDN: n8n.appexx.me
+      COOLIFY_URL: 'https://n8n.appexx.me'
+      SERVICE_NAME_N8N: n8n
+      SERVICE_NAME_TASK_RUNNERS: task-runners
+    volumes:
+      - 'kgwgwgk4co4g4gcgsgw0gwgw_n8n-data:/home/node/.n8n'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'wget -qO- http://127.0.0.1:5678/'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: n8n-kgwgwgk4co4g4gcgsgw0gwgw
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=3
+      - coolify.type=service
+      - coolify.name=n8n-kgwgwgk4co4g4gcgsgw0gwgw
+      - coolify.resourceName=n8n-kgwgwgk4co4g4gcgsgw0gwgw
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=n8n
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=4
+      - coolify.service.subType=application
+      - coolify.service.subName=n8n
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.entryPoints=http
+      - traefik.http.routers.http-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.rule=Host(`n8n.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.entryPoints=https
+      - traefik.http.routers.https-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.middlewares=gzip
+      - 'traefik.http.routers.https-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.rule=Host(`n8n.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-kgwgwgk4co4g4gcgsgw0gwgw-n8n.tls=true
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 5678}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://n8n.appexx.me'
+      - caddy_ingress_network=kgwgwgk4co4g4gcgsgw0gwgw
+    networks:
+      kgwgwgk4co4g4gcgsgw0gwgw: null
+    env_file:
+      - .env
+  task-runners:
+    image: 'n8nio/runners:2.1.5'
+    environment:
+      N8N_RUNNERS_TASK_BROKER_URI: 'http://n8n:5679'
+      N8N_RUNNERS_AUTH_TOKEN: '${SERVICE_PASSWORD_N8N}'
+      N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT: '15'
+      N8N_RUNNERS_MAX_CONCURRENCY: '5'
+      COOLIFY_RESOURCE_UUID: kgwgwgk4co4g4gcgsgw0gwgw
+      COOLIFY_CONTAINER_NAME: task-runners-kgwgwgk4co4g4gcgsgw0gwgw
+      SERVICE_NAME_N8N: n8n
+      SERVICE_NAME_TASK_RUNNERS: task-runners
+    depends_on:
+      - n8n
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'wget -qO- http://127.0.0.1:5680/'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: task-runners-kgwgwgk4co4g4gcgsgw0gwgw
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=3
+      - coolify.type=service
+      - coolify.name=task-runners-kgwgwgk4co4g4gcgsgw0gwgw
+      - coolify.resourceName=n8n-kgwgwgk4co4g4gcgsgw0gwgw
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=task-runners
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=5
+      - coolify.service.subType=application
+      - coolify.service.subName=task-runners
+    networks:
+      kgwgwgk4co4g4gcgsgw0gwgw: null
+    env_file:
+      - .env
+volumes:
+  kgwgwgk4co4g4gcgsgw0gwgw_n8n-data:
+    name: kgwgwgk4co4g4gcgsgw0gwgw_n8n-data
+networks:
+  kgwgwgk4co4g4gcgsgw0gwgw:
+    name: kgwgwgk4co4g4gcgsgw0gwgw
+    external: true

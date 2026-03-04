@@ -1,0 +1,123 @@
+services:
+  calcom:
+    image: calcom.docker.scarf.sh/calcom/cal.com
+    platform: linux/amd64
+    restart: always
+    environment:
+      NEXT_PUBLIC_LICENSE_CONSENT: agree
+      NODE_ENV: production
+      NEXT_PUBLIC_WEBAPP_URL: 'https://cal.appexx.me'
+      NEXT_PUBLIC_API_V2_URL: 'https://cal.appexx.me/api/v2'
+      NEXTAUTH_URL: 'https://cal.appexx.me/api/auth'
+      NEXTAUTH_SECRET: '${SERVICE_BASE64_CALCOMSECRET}'
+      CALENDSO_ENCRYPTION_KEY: '${SERVICE_BASE64_CALCOMKEY}'
+      POSTGRES_USER: '${SERVICE_USER_POSTGRES}'
+      POSTGRES_PASSWORD: '${SERVICE_PASSWORD_POSTGRES}'
+      POSTGRES_DB: calendso
+      DATABASE_HOST: postgresql
+      DATABASE_URL: 'postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgresql/calendso'
+      DATABASE_DIRECT_URL: 'postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgresql/calendso'
+      CALCOM_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_APP_NAME: Cal.com
+      COOLIFY_RESOURCE_UUID: kg00okog4ooskkock4osggc4
+      COOLIFY_CONTAINER_NAME: calcom-kg00okog4ooskkock4osggc4
+      COOLIFY_FQDN: cal.appexx.me
+      COOLIFY_URL: 'https://cal.appexx.me'
+      SERVICE_NAME_CALCOM: calcom
+      SERVICE_NAME_POSTGRESQL: postgresql
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    networks:
+      coolify: null
+      kg00okog4ooskkock4osggc4: null
+    container_name: calcom-kg00okog4ooskkock4osggc4
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=8
+      - coolify.type=service
+      - coolify.name=calcom-kg00okog4ooskkock4osggc4
+      - coolify.resourceName=calcom-kg00okog4ooskkock4osggc4
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=calcom
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=11
+      - coolify.service.subType=application
+      - coolify.service.subName=calcom
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-kg00okog4ooskkock4osggc4-calcom.entryPoints=http
+      - traefik.http.routers.http-0-kg00okog4ooskkock4osggc4-calcom.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-kg00okog4ooskkock4osggc4-calcom.rule=Host(`cal.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-kg00okog4ooskkock4osggc4-calcom.service=http-0-kg00okog4ooskkock4osggc4-calcom
+      - traefik.http.routers.https-0-kg00okog4ooskkock4osggc4-calcom.entryPoints=https
+      - traefik.http.routers.https-0-kg00okog4ooskkock4osggc4-calcom.middlewares=gzip
+      - 'traefik.http.routers.https-0-kg00okog4ooskkock4osggc4-calcom.rule=Host(`cal.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-kg00okog4ooskkock4osggc4-calcom.service=https-0-kg00okog4ooskkock4osggc4-calcom
+      - traefik.http.routers.https-0-kg00okog4ooskkock4osggc4-calcom.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-kg00okog4ooskkock4osggc4-calcom.tls=true
+      - traefik.http.services.http-0-kg00okog4ooskkock4osggc4-calcom.loadbalancer.server.port=3000
+      - traefik.http.services.https-0-kg00okog4ooskkock4osggc4-calcom.loadbalancer.server.port=3000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://cal.appexx.me'
+      - caddy_ingress_network=kg00okog4ooskkock4osggc4
+    env_file:
+      - .env
+  postgresql:
+    image: 'postgres:16-alpine'
+    restart: always
+    environment:
+      POSTGRES_USER: '${SERVICE_USER_POSTGRES}'
+      POSTGRES_PASSWORD: '${SERVICE_PASSWORD_POSTGRES}'
+      POSTGRES_DB: calendso
+      COOLIFY_RESOURCE_UUID: kg00okog4ooskkock4osggc4
+      COOLIFY_CONTAINER_NAME: postgresql-kg00okog4ooskkock4osggc4
+      SERVICE_NAME_CALCOM: calcom
+      SERVICE_NAME_POSTGRESQL: postgresql
+    volumes:
+      - 'kg00okog4ooskkock4osggc4_calcom-postgresql-data:/var/lib/postgresql/data'
+    networks:
+      coolify: null
+      kg00okog4ooskkock4osggc4: null
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: postgresql-kg00okog4ooskkock4osggc4
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=8
+      - coolify.type=service
+      - coolify.name=postgresql-kg00okog4ooskkock4osggc4
+      - coolify.resourceName=calcom-kg00okog4ooskkock4osggc4
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=postgresql
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=4
+      - coolify.service.subType=database
+      - coolify.service.subName=postgresql
+    env_file:
+      - .env
+volumes:
+  calcom-postgresql-data:
+    external: false
+  kg00okog4ooskkock4osggc4_calcom-postgresql-data:
+    name: kg00okog4ooskkock4osggc4_calcom-postgresql-data
+networks:
+  coolify:
+    external: true
+  kg00okog4ooskkock4osggc4:
+    name: kg00okog4ooskkock4osggc4
+    external: true

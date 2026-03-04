@@ -1,0 +1,64 @@
+services:
+  uptime-kuma:
+    image: 'louislam/uptime-kuma:2'
+    environment:
+      SERVICE_URL_UPTIMEKUMA_3001: 'https://uptime.appexx.me:3001'
+      COOLIFY_RESOURCE_UUID: a080c4gg8ssww4wc044o8s4o
+      COOLIFY_CONTAINER_NAME: uptime-kuma-a080c4gg8ssww4wc044o8s4o
+      COOLIFY_FQDN: uptime.appexx.me
+      COOLIFY_URL: 'https://uptime.appexx.me'
+      SERVICE_NAME_UPTIME_KUMA: uptime-kuma
+    volumes:
+      - 'a080c4gg8ssww4wc044o8s4o_uptime-kuma-data:/app/data'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - extra/healthcheck
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    container_name: uptime-kuma-a080c4gg8ssww4wc044o8s4o
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=uptime-kuma-a080c4gg8ssww4wc044o8s4o
+      - coolify.resourceName=uptime-kuma-a080c4gg8ssww4wc044o8s4o
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=uptime-kuma
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=1
+      - coolify.service.subType=application
+      - coolify.service.subName=uptime-kuma
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.entryPoints=http
+      - traefik.http.routers.http-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.rule=Host(`uptime.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.entryPoints=https
+      - traefik.http.routers.https-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.middlewares=gzip
+      - 'traefik.http.routers.https-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.rule=Host(`uptime.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-a080c4gg8ssww4wc044o8s4o-uptime-kuma.tls=true
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3001}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://uptime.appexx.me'
+      - caddy_ingress_network=a080c4gg8ssww4wc044o8s4o
+    networks:
+      a080c4gg8ssww4wc044o8s4o: null
+    env_file:
+      - .env
+volumes:
+  a080c4gg8ssww4wc044o8s4o_uptime-kuma-data:
+    name: a080c4gg8ssww4wc044o8s4o_uptime-kuma-data
+networks:
+  a080c4gg8ssww4wc044o8s4o:
+    name: a080c4gg8ssww4wc044o8s4o
+    external: true

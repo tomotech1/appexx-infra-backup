@@ -1,0 +1,168 @@
+services:
+  listmonk:
+    image: 'listmonk/listmonk:latest'
+    restart: always
+    environment:
+      LISTMONK_app__address: '0.0.0.0:9000'
+      LISTMONK_app__admin_username: admin
+      LISTMONK_app__admin_password: changeme123
+      LISTMONK_db__host: listmonk-db
+      LISTMONK_db__name: listmonk
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: listmonk-password
+      LISTMONK_db__port: '5432'
+      TZ: Asia/Tokyo
+      COOLIFY_RESOURCE_UUID: v4cgk8ck8kgw44ok004s8g8s
+      COOLIFY_CONTAINER_NAME: listmonk-v4cgk8ck8kgw44ok004s8g8s
+      COOLIFY_FQDN: listmonk.appexx.me
+      COOLIFY_URL: 'https://listmonk.appexx.me'
+      SERVICE_NAME_LISTMONK: listmonk
+      SERVICE_NAME_LISTMONK_SETUP: listmonk-setup
+      SERVICE_NAME_LISTMONK_DB: listmonk-db
+    volumes:
+      - 'v4cgk8ck8kgw44ok004s8g8s_listmonk-uploads:/listmonk/uploads'
+    depends_on:
+      listmonk-db:
+        condition: service_healthy
+    networks:
+      coolify: null
+      v4cgk8ck8kgw44ok004s8g8s: null
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - '-q'
+        - '--spider'
+        - 'http://127.0.0.1:9000'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: listmonk-v4cgk8ck8kgw44ok004s8g8s
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=9
+      - coolify.type=service
+      - coolify.name=listmonk-v4cgk8ck8kgw44ok004s8g8s
+      - coolify.resourceName=listmonk-v4cgk8ck8kgw44ok004s8g8s
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=listmonk
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=12
+      - coolify.service.subType=application
+      - coolify.service.subName=listmonk
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.entryPoints=http
+      - traefik.http.routers.http-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.rule=Host(`listmonk.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.entryPoints=https
+      - traefik.http.routers.https-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.middlewares=gzip
+      - 'traefik.http.routers.https-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.rule=Host(`listmonk.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-v4cgk8ck8kgw44ok004s8g8s-listmonk.tls=true
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 9000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://listmonk.appexx.me'
+      - caddy_ingress_network=v4cgk8ck8kgw44ok004s8g8s
+    env_file:
+      - .env
+  listmonk-setup:
+    image: 'listmonk/listmonk:latest'
+    command: './listmonk --install --yes --idempotent'
+    restart: 'no'
+    environment:
+      LISTMONK_db__host: listmonk-db
+      LISTMONK_db__name: listmonk
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: listmonk-password
+      LISTMONK_db__port: '5432'
+      COOLIFY_RESOURCE_UUID: v4cgk8ck8kgw44ok004s8g8s
+      COOLIFY_CONTAINER_NAME: listmonk-setup-v4cgk8ck8kgw44ok004s8g8s
+      SERVICE_NAME_LISTMONK: listmonk
+      SERVICE_NAME_LISTMONK_SETUP: listmonk-setup
+      SERVICE_NAME_LISTMONK_DB: listmonk-db
+    depends_on:
+      listmonk-db:
+        condition: service_healthy
+    networks:
+      coolify: null
+      v4cgk8ck8kgw44ok004s8g8s: null
+    container_name: listmonk-setup-v4cgk8ck8kgw44ok004s8g8s
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=9
+      - coolify.type=service
+      - coolify.name=listmonk-setup-v4cgk8ck8kgw44ok004s8g8s
+      - coolify.resourceName=listmonk-v4cgk8ck8kgw44ok004s8g8s
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=listmonk-setup
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=14
+      - coolify.service.subType=application
+      - coolify.service.subName=listmonk-setup
+    env_file:
+      - .env
+  listmonk-db:
+    image: 'postgres:16-alpine'
+    restart: always
+    environment:
+      POSTGRES_USER: listmonk
+      POSTGRES_PASSWORD: listmonk-password
+      POSTGRES_DB: listmonk
+      COOLIFY_RESOURCE_UUID: v4cgk8ck8kgw44ok004s8g8s
+      COOLIFY_CONTAINER_NAME: listmonk-db-v4cgk8ck8kgw44ok004s8g8s
+      SERVICE_NAME_LISTMONK: listmonk
+      SERVICE_NAME_LISTMONK_SETUP: listmonk-setup
+      SERVICE_NAME_LISTMONK_DB: listmonk-db
+    volumes:
+      - 'v4cgk8ck8kgw44ok004s8g8s_listmonk-db-data:/var/lib/postgresql/data'
+    networks:
+      coolify: null
+      v4cgk8ck8kgw44ok004s8g8s: null
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U listmonk -d listmonk'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: listmonk-db-v4cgk8ck8kgw44ok004s8g8s
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=9
+      - coolify.type=service
+      - coolify.name=listmonk-db-v4cgk8ck8kgw44ok004s8g8s
+      - coolify.resourceName=listmonk-v4cgk8ck8kgw44ok004s8g8s
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=listmonk-db
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=6
+      - coolify.service.subType=database
+      - coolify.service.subName=listmonk-db
+    env_file:
+      - .env
+volumes:
+  listmonk-uploads:
+    external: false
+  listmonk-db-data:
+    external: false
+  v4cgk8ck8kgw44ok004s8g8s_listmonk-uploads:
+    name: v4cgk8ck8kgw44ok004s8g8s_listmonk-uploads
+  v4cgk8ck8kgw44ok004s8g8s_listmonk-db-data:
+    name: v4cgk8ck8kgw44ok004s8g8s_listmonk-db-data
+networks:
+  coolify:
+    external: true
+  v4cgk8ck8kgw44ok004s8g8s:
+    name: v4cgk8ck8kgw44ok004s8g8s
+    external: true

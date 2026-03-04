@@ -1,0 +1,158 @@
+services:
+  backend:
+    image: 'infisical/infisical:v0.154.6'
+    environment:
+      SITE_URL: 'https://infisical.appexx.me'
+      NODE_ENV: production
+      ENCRYPTION_KEY: '${SERVICE_PASSWORD_ENCRYPTIONKEY}'
+      AUTH_SECRET: '${SERVICE_REALBASE64_64_AUTHSECRET}'
+      DB_CONNECTION_URI: 'postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db:5432/infisical'
+      REDIS_URL: 'redis://redis-nocg0cc4o4wowwco4sg4kkg0:6379'
+      COOLIFY_RESOURCE_UUID: nocg0cc4o4wowwco4sg4kkg0
+      COOLIFY_CONTAINER_NAME: backend-nocg0cc4o4wowwco4sg4kkg0
+      COOLIFY_FQDN: infisical.appexx.me
+      COOLIFY_URL: 'https://infisical.appexx.me'
+      SERVICE_NAME_BACKEND: backend
+      SERVICE_NAME_REDIS: redis
+      SERVICE_NAME_DB: db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/api/status || exit 1'
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    container_name: backend-nocg0cc4o4wowwco4sg4kkg0
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=12
+      - coolify.type=service
+      - coolify.name=backend-nocg0cc4o4wowwco4sg4kkg0
+      - coolify.resourceName=infisical-nocg0cc4o4wowwco4sg4kkg0
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=backend
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=18
+      - coolify.service.subType=application
+      - coolify.service.subName=backend
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-nocg0cc4o4wowwco4sg4kkg0-backend.entryPoints=http
+      - traefik.http.routers.http-0-nocg0cc4o4wowwco4sg4kkg0-backend.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-nocg0cc4o4wowwco4sg4kkg0-backend.rule=Host(`infisical.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-nocg0cc4o4wowwco4sg4kkg0-backend.entryPoints=https
+      - traefik.http.routers.https-0-nocg0cc4o4wowwco4sg4kkg0-backend.middlewares=gzip
+      - 'traefik.http.routers.https-0-nocg0cc4o4wowwco4sg4kkg0-backend.rule=Host(`infisical.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-nocg0cc4o4wowwco4sg4kkg0-backend.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-nocg0cc4o4wowwco4sg4kkg0-backend.tls=true
+      - traefik.http.services.https-0-nocg0cc4o4wowwco4sg4kkg0-backend.loadbalancer.server.port=8080
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://infisical.appexx.me'
+      - caddy_ingress_network=nocg0cc4o4wowwco4sg4kkg0
+    networks:
+      nocg0cc4o4wowwco4sg4kkg0: null
+      coolify: null
+    env_file:
+      - .env
+  redis:
+    image: 'redis:7'
+    command: redis-server --requirepass ''
+    volumes:
+      - 'nocg0cc4o4wowwco4sg4kkg0_redis-data:/data'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'redis-cli -h localhost -p 6379 ping'
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    container_name: redis-nocg0cc4o4wowwco4sg4kkg0
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=12
+      - coolify.type=service
+      - coolify.name=redis-nocg0cc4o4wowwco4sg4kkg0
+      - coolify.resourceName=infisical-nocg0cc4o4wowwco4sg4kkg0
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=8
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+    networks:
+      nocg0cc4o4wowwco4sg4kkg0: null
+    environment:
+      COOLIFY_RESOURCE_UUID: nocg0cc4o4wowwco4sg4kkg0
+      COOLIFY_CONTAINER_NAME: redis-nocg0cc4o4wowwco4sg4kkg0
+      SERVICE_NAME_BACKEND: backend
+      SERVICE_NAME_REDIS: redis
+      SERVICE_NAME_DB: db
+    env_file:
+      - .env
+  db:
+    image: 'postgres:14-alpine'
+    volumes:
+      - 'nocg0cc4o4wowwco4sg4kkg0_pg-data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_USER: '${SERVICE_USER_POSTGRES}'
+      POSTGRES_PASSWORD: '${SERVICE_PASSWORD_POSTGRES}'
+      POSTGRES_DB: infisical
+      COOLIFY_RESOURCE_UUID: nocg0cc4o4wowwco4sg4kkg0
+      COOLIFY_CONTAINER_NAME: db-nocg0cc4o4wowwco4sg4kkg0
+      SERVICE_NAME_BACKEND: backend
+      SERVICE_NAME_REDIS: redis
+      SERVICE_NAME_DB: db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    container_name: db-nocg0cc4o4wowwco4sg4kkg0
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=12
+      - coolify.type=service
+      - coolify.name=db-nocg0cc4o4wowwco4sg4kkg0
+      - coolify.resourceName=infisical-nocg0cc4o4wowwco4sg4kkg0
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=db
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=9
+      - coolify.service.subType=database
+      - coolify.service.subName=db
+    networks:
+      nocg0cc4o4wowwco4sg4kkg0: null
+    env_file:
+      - .env
+volumes:
+  nocg0cc4o4wowwco4sg4kkg0_redis-data:
+    name: nocg0cc4o4wowwco4sg4kkg0_redis-data
+  nocg0cc4o4wowwco4sg4kkg0_pg-data:
+    name: nocg0cc4o4wowwco4sg4kkg0_pg-data
+networks:
+  nocg0cc4o4wowwco4sg4kkg0:
+    name: nocg0cc4o4wowwco4sg4kkg0
+    external: true
+  coolify:
+    external: true
