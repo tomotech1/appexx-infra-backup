@@ -1,0 +1,211 @@
+services:
+  authentik-server:
+    image: 'ghcr.io/goauthentik/server:2025.2.1'
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql-lgw4gg84wows08wws804s4sc
+      AUTHENTIK_POSTGRESQL__USER: '${SERVICE_USER_POSTGRESQL}'
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      AUTHENTIK_SECRET_KEY: '${SERVICE_PASSWORD_64_AUTHENTIKSERVER}'
+      AUTHENTIK_ERROR_REPORTING__ENABLED: 'false'
+      AUTHENTIK_REDIS__HOST: redis-lgw4gg84wows08wws804s4sc
+      AUTHENTIK_HOST: 'https://authentik.appexx.me'
+      COOLIFY_RESOURCE_UUID: lgw4gg84wows08wws804s4sc
+      COOLIFY_CONTAINER_NAME: authentik-server-lgw4gg84wows08wws804s4sc
+      COOLIFY_FQDN: authentik.appexx.me
+      COOLIFY_URL: 'https://authentik.appexx.me'
+      SERVICE_NAME_AUTHENTIK_SERVER: authentik-server
+      SERVICE_NAME_AUTHENTIK_WORKER: authentik-worker
+      SERVICE_NAME_REDIS: redis
+      SERVICE_NAME_POSTGRESQL: postgresql
+    volumes:
+      - 'lgw4gg84wows08wws804s4sc_authentik-media:/media'
+      - 'lgw4gg84wows08wws804s4sc_authentik-templates:/templates'
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    container_name: authentik-server-lgw4gg84wows08wws804s4sc
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=13
+      - coolify.type=service
+      - coolify.name=authentik-server-lgw4gg84wows08wws804s4sc
+      - coolify.resourceName=authentik-lgw4gg84wows08wws804s4sc
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=authentik-server
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=19
+      - coolify.service.subType=application
+      - coolify.service.subName=authentik-server
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-lgw4gg84wows08wws804s4sc-authentik-server.entryPoints=http
+      - traefik.http.routers.http-0-lgw4gg84wows08wws804s4sc-authentik-server.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-lgw4gg84wows08wws804s4sc-authentik-server.rule=Host(`authentik.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-lgw4gg84wows08wws804s4sc-authentik-server.entryPoints=https
+      - traefik.http.routers.https-0-lgw4gg84wows08wws804s4sc-authentik-server.middlewares=gzip
+      - 'traefik.http.routers.https-0-lgw4gg84wows08wws804s4sc-authentik-server.rule=Host(`authentik.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-lgw4gg84wows08wws804s4sc-authentik-server.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-lgw4gg84wows08wws804s4sc-authentik-server.tls=true
+      - traefik.http.services.https-0-lgw4gg84wows08wws804s4sc-authentik-server.loadbalancer.server.port=9000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://authentik.appexx.me'
+      - caddy_ingress_network=lgw4gg84wows08wws804s4sc
+    networks:
+      lgw4gg84wows08wws804s4sc: null
+      coolify: null
+    env_file:
+      - .env
+  authentik-worker:
+    image: 'ghcr.io/goauthentik/server:2025.2.1'
+    restart: unless-stopped
+    command: worker
+    user: root
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql-lgw4gg84wows08wws804s4sc
+      AUTHENTIK_POSTGRESQL__USER: '${SERVICE_USER_POSTGRESQL}'
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      AUTHENTIK_SECRET_KEY: '${SERVICE_PASSWORD_64_AUTHENTIKSERVER}'
+      AUTHENTIK_ERROR_REPORTING__ENABLED: 'false'
+      AUTHENTIK_REDIS__HOST: redis-lgw4gg84wows08wws804s4sc
+      COOLIFY_RESOURCE_UUID: lgw4gg84wows08wws804s4sc
+      COOLIFY_CONTAINER_NAME: authentik-worker-lgw4gg84wows08wws804s4sc
+      SERVICE_NAME_AUTHENTIK_SERVER: authentik-server
+      SERVICE_NAME_AUTHENTIK_WORKER: authentik-worker
+      SERVICE_NAME_REDIS: redis
+      SERVICE_NAME_POSTGRESQL: postgresql
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - 'lgw4gg84wows08wws804s4sc_authentik-media:/media'
+      - 'lgw4gg84wows08wws804s4sc_authentik-certs:/certs'
+      - 'lgw4gg84wows08wws804s4sc_authentik-templates:/templates'
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    container_name: authentik-worker-lgw4gg84wows08wws804s4sc
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=13
+      - coolify.type=service
+      - coolify.name=authentik-worker-lgw4gg84wows08wws804s4sc
+      - coolify.resourceName=authentik-lgw4gg84wows08wws804s4sc
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=authentik-worker
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=20
+      - coolify.service.subType=application
+      - coolify.service.subName=authentik-worker
+    networks:
+      lgw4gg84wows08wws804s4sc: null
+    env_file:
+      - .env
+  redis:
+    image: 'redis:alpine'
+    restart: unless-stopped
+    command: "redis-server --requirepass ''"
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 2s
+      timeout: 10s
+      retries: 15
+    container_name: redis-lgw4gg84wows08wws804s4sc
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=13
+      - coolify.type=service
+      - coolify.name=redis-lgw4gg84wows08wws804s4sc
+      - coolify.resourceName=authentik-lgw4gg84wows08wws804s4sc
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=11
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+    networks:
+      lgw4gg84wows08wws804s4sc: null
+    environment:
+      COOLIFY_RESOURCE_UUID: lgw4gg84wows08wws804s4sc
+      COOLIFY_CONTAINER_NAME: redis-lgw4gg84wows08wws804s4sc
+      SERVICE_NAME_AUTHENTIK_SERVER: authentik-server
+      SERVICE_NAME_AUTHENTIK_WORKER: authentik-worker
+      SERVICE_NAME_REDIS: redis
+      SERVICE_NAME_POSTGRESQL: postgresql
+    env_file:
+      - .env
+  postgresql:
+    image: 'postgres:16-alpine'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}'
+      interval: 2s
+      timeout: 10s
+      retries: 15
+    volumes:
+      - 'lgw4gg84wows08wws804s4sc_authentik-db:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      POSTGRES_USER: '${SERVICE_USER_POSTGRESQL}'
+      POSTGRES_DB: authentik
+      COOLIFY_RESOURCE_UUID: lgw4gg84wows08wws804s4sc
+      COOLIFY_CONTAINER_NAME: postgresql-lgw4gg84wows08wws804s4sc
+      SERVICE_NAME_AUTHENTIK_SERVER: authentik-server
+      SERVICE_NAME_AUTHENTIK_WORKER: authentik-worker
+      SERVICE_NAME_REDIS: redis
+      SERVICE_NAME_POSTGRESQL: postgresql
+    container_name: postgresql-lgw4gg84wows08wws804s4sc
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=13
+      - coolify.type=service
+      - coolify.name=postgresql-lgw4gg84wows08wws804s4sc
+      - coolify.resourceName=authentik-lgw4gg84wows08wws804s4sc
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=postgresql
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=10
+      - coolify.service.subType=database
+      - coolify.service.subName=postgresql
+    networks:
+      lgw4gg84wows08wws804s4sc: null
+    env_file:
+      - .env
+volumes:
+  lgw4gg84wows08wws804s4sc_authentik-media:
+    name: lgw4gg84wows08wws804s4sc_authentik-media
+  lgw4gg84wows08wws804s4sc_authentik-templates:
+    name: lgw4gg84wows08wws804s4sc_authentik-templates
+  lgw4gg84wows08wws804s4sc_authentik-certs:
+    name: lgw4gg84wows08wws804s4sc_authentik-certs
+  lgw4gg84wows08wws804s4sc_authentik-db:
+    name: lgw4gg84wows08wws804s4sc_authentik-db
+networks:
+  lgw4gg84wows08wws804s4sc:
+    name: lgw4gg84wows08wws804s4sc
+    external: true
+  coolify:
+    external: true
