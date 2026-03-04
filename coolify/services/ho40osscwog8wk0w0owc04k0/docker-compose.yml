@@ -1,0 +1,115 @@
+services:
+  metabase:
+    image: 'metabase/metabase:latest'
+    restart: unless-stopped
+    volumes:
+      - '/dev/urandom:/dev/random:ro'
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: postgresql-ho40osscwog8wk0w0owc04k0
+      MB_DB_PORT: '5432'
+      MB_DB_DBNAME: '${POSTGRESQL_DATABASE:-metabase}'
+      MB_DB_USER: $SERVICE_USER_POSTGRESQL
+      MB_DB_PASS: $SERVICE_PASSWORD_POSTGRESQL
+      MB_SITE_URL: 'https://metabase.appexx.me'
+      COOLIFY_RESOURCE_UUID: ho40osscwog8wk0w0owc04k0
+      COOLIFY_CONTAINER_NAME: metabase-ho40osscwog8wk0w0owc04k0
+      COOLIFY_FQDN: metabase.appexx.me
+      COOLIFY_URL: 'https://metabase.appexx.me'
+      SERVICE_NAME_METABASE: metabase
+      SERVICE_NAME_POSTGRESQL: postgresql
+    healthcheck:
+      test: 'curl --fail -I http://127.0.0.1:3000/api/health || exit 1'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    networks:
+      ho40osscwog8wk0w0owc04k0: null
+      coolify: null
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    container_name: metabase-ho40osscwog8wk0w0owc04k0
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=17
+      - coolify.type=service
+      - coolify.name=metabase-ho40osscwog8wk0w0owc04k0
+      - coolify.resourceName=metabase-ho40osscwog8wk0w0owc04k0
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=metabase
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=24
+      - coolify.service.subType=application
+      - coolify.service.subName=metabase
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-ho40osscwog8wk0w0owc04k0-metabase.entryPoints=http
+      - traefik.http.routers.http-0-ho40osscwog8wk0w0owc04k0-metabase.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-ho40osscwog8wk0w0owc04k0-metabase.rule=Host(`metabase.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-ho40osscwog8wk0w0owc04k0-metabase.entryPoints=https
+      - traefik.http.routers.https-0-ho40osscwog8wk0w0owc04k0-metabase.middlewares=gzip
+      - 'traefik.http.routers.https-0-ho40osscwog8wk0w0owc04k0-metabase.rule=Host(`metabase.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-ho40osscwog8wk0w0owc04k0-metabase.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-ho40osscwog8wk0w0owc04k0-metabase.tls=true
+      - traefik.http.services.https-0-ho40osscwog8wk0w0owc04k0-metabase.loadbalancer.server.port=3000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://metabase.appexx.me'
+      - caddy_ingress_network=ho40osscwog8wk0w0owc04k0
+    env_file:
+      - .env
+  postgresql:
+    image: 'postgres:16-alpine'
+    restart: unless-stopped
+    volumes:
+      - 'ho40osscwog8wk0w0owc04k0_metabase-postgresql-data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_USER: '${SERVICE_USER_POSTGRESQL}'
+      POSTGRES_PASSWORD: '${SERVICE_PASSWORD_POSTGRESQL}'
+      POSTGRES_DB: '${POSTGRESQL_DATABASE:-metabase}'
+      COOLIFY_RESOURCE_UUID: ho40osscwog8wk0w0owc04k0
+      COOLIFY_CONTAINER_NAME: postgresql-ho40osscwog8wk0w0owc04k0
+      SERVICE_NAME_METABASE: metabase
+      SERVICE_NAME_POSTGRESQL: postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: postgresql-ho40osscwog8wk0w0owc04k0
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=17
+      - coolify.type=service
+      - coolify.name=postgresql-ho40osscwog8wk0w0owc04k0
+      - coolify.resourceName=metabase-ho40osscwog8wk0w0owc04k0
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=postgresql
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=12
+      - coolify.service.subType=database
+      - coolify.service.subName=postgresql
+    networks:
+      ho40osscwog8wk0w0owc04k0: null
+    env_file:
+      - .env
+volumes:
+  ho40osscwog8wk0w0owc04k0_metabase-postgresql-data:
+    name: ho40osscwog8wk0w0owc04k0_metabase-postgresql-data
+networks:
+  ho40osscwog8wk0w0owc04k0:
+    name: ho40osscwog8wk0w0owc04k0
+    external: true
+  coolify:
+    external: true

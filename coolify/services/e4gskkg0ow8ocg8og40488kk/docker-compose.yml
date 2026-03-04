@@ -1,0 +1,67 @@
+services:
+  nocodb:
+    image: nocodb/nocodb
+    restart: unless-stopped
+    environment:
+      NC_PUBLIC_URL: 'https://nocodb.appexx.me'
+      COOLIFY_RESOURCE_UUID: e4gskkg0ow8ocg8og40488kk
+      COOLIFY_CONTAINER_NAME: nocodb-e4gskkg0ow8ocg8og40488kk
+      COOLIFY_FQDN: nocodb.appexx.me
+      COOLIFY_URL: 'https://nocodb.appexx.me'
+      SERVICE_NAME_NOCODB: nocodb
+    volumes:
+      - 'e4gskkg0ow8ocg8og40488kk_nocodb-data:/usr/app/data/'
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - '-q'
+        - '--spider'
+        - 'http://127.0.0.1:8080/api/v1/health'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: nocodb-e4gskkg0ow8ocg8og40488kk
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=16
+      - coolify.type=service
+      - coolify.name=nocodb-e4gskkg0ow8ocg8og40488kk
+      - coolify.resourceName=nocodb-e4gskkg0ow8ocg8og40488kk
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=nocodb
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=23
+      - coolify.service.subType=application
+      - coolify.service.subName=nocodb
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-e4gskkg0ow8ocg8og40488kk-nocodb.entryPoints=http
+      - traefik.http.routers.http-0-e4gskkg0ow8ocg8og40488kk-nocodb.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-e4gskkg0ow8ocg8og40488kk-nocodb.rule=Host(`nocodb.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-e4gskkg0ow8ocg8og40488kk-nocodb.entryPoints=https
+      - traefik.http.routers.https-0-e4gskkg0ow8ocg8og40488kk-nocodb.middlewares=gzip
+      - 'traefik.http.routers.https-0-e4gskkg0ow8ocg8og40488kk-nocodb.rule=Host(`nocodb.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-e4gskkg0ow8ocg8og40488kk-nocodb.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-e4gskkg0ow8ocg8og40488kk-nocodb.tls=true
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 8080}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://nocodb.appexx.me'
+      - caddy_ingress_network=e4gskkg0ow8ocg8og40488kk
+    networks:
+      e4gskkg0ow8ocg8og40488kk: null
+    env_file:
+      - .env
+volumes:
+  e4gskkg0ow8ocg8og40488kk_nocodb-data:
+    name: e4gskkg0ow8ocg8og40488kk_nocodb-data
+networks:
+  e4gskkg0ow8ocg8og40488kk:
+    name: e4gskkg0ow8ocg8og40488kk
+    external: true
