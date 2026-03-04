@@ -1,0 +1,65 @@
+services:
+  ai-landing:
+    image: 'nginx:alpine'
+    restart: unless-stopped
+    volumes:
+      - 't88gc0ko4skcooocgokwkswo_ai-landing-html:/usr/share/nginx/html'
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - '-qO-'
+        - 'http://127.0.0.1:80/'
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    container_name: ai-landing-t88gc0ko4skcooocgokwkswo
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=15
+      - coolify.type=service
+      - coolify.name=ai-landing-t88gc0ko4skcooocgokwkswo
+      - coolify.resourceName=service-fwcc0s8s8cscgwkkoskkkoco
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=ai-landing
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=22
+      - coolify.service.subType=application
+      - coolify.service.subName=ai-landing
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-t88gc0ko4skcooocgokwkswo-ai-landing.entryPoints=http
+      - traefik.http.routers.http-0-t88gc0ko4skcooocgokwkswo-ai-landing.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-t88gc0ko4skcooocgokwkswo-ai-landing.rule=Host(`ai.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-t88gc0ko4skcooocgokwkswo-ai-landing.entryPoints=https
+      - traefik.http.routers.https-0-t88gc0ko4skcooocgokwkswo-ai-landing.middlewares=gzip
+      - 'traefik.http.routers.https-0-t88gc0ko4skcooocgokwkswo-ai-landing.rule=Host(`ai.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-t88gc0ko4skcooocgokwkswo-ai-landing.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-t88gc0ko4skcooocgokwkswo-ai-landing.tls=true
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://ai.appexx.me'
+      - caddy_ingress_network=t88gc0ko4skcooocgokwkswo
+    networks:
+      t88gc0ko4skcooocgokwkswo: null
+    environment:
+      COOLIFY_RESOURCE_UUID: t88gc0ko4skcooocgokwkswo
+      COOLIFY_CONTAINER_NAME: ai-landing-t88gc0ko4skcooocgokwkswo
+      COOLIFY_FQDN: ai.appexx.me
+      COOLIFY_URL: 'https://ai.appexx.me'
+      SERVICE_NAME_AI_LANDING: ai-landing
+    env_file:
+      - .env
+volumes:
+  t88gc0ko4skcooocgokwkswo_ai-landing-html:
+    name: t88gc0ko4skcooocgokwkswo_ai-landing-html
+networks:
+  t88gc0ko4skcooocgokwkswo:
+    name: t88gc0ko4skcooocgokwkswo
+    external: true
