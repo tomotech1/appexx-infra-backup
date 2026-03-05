@@ -1,0 +1,235 @@
+services:
+  chatwoot:
+    image: 'chatwoot/chatwoot:latest'
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SECRET_KEY_BASE: $SERVICE_PASSWORD_CHATWOOT
+      FRONTEND_URL: 'https://chatwoot.appexx.me'
+      DEFAULT_LOCALE: ja
+      FORCE_SSL: 'false'
+      ENABLE_ACCOUNT_SIGNUP: 'false'
+      REDIS_URL: 'redis://redis-z88gg84880kkogw4occgc48w:6379'
+      POSTGRES_DATABASE: '${POSTGRES_DB:-chatwoot}'
+      POSTGRES_HOST: postgres-z88gg84880kkogw4occgc48w
+      POSTGRES_USERNAME: $SERVICE_USER_POSTGRES
+      POSTGRES_PASSWORD: $SERVICE_PASSWORD_POSTGRES
+      RAILS_MAX_THREADS: '5'
+      NODE_ENV: production
+      RAILS_ENV: production
+      INSTALLATION_ENV: docker
+      COOLIFY_RESOURCE_UUID: z88gg84880kkogw4occgc48w
+      COOLIFY_CONTAINER_NAME: chatwoot-z88gg84880kkogw4occgc48w
+      COOLIFY_FQDN: chatwoot.appexx.me
+      COOLIFY_URL: 'https://chatwoot.appexx.me'
+      SERVICE_NAME_CHATWOOT: chatwoot
+      SERVICE_NAME_SIDEKIQ: sidekiq
+      SERVICE_NAME_POSTGRES: postgres
+      SERVICE_NAME_REDIS: redis
+    entrypoint: docker/entrypoints/rails.sh
+    command: 'sh -c "bundle exec rails db:chatwoot_prepare && bundle exec rails s -p 3000 -b 0.0.0.0"'
+    volumes:
+      - 'z88gg84880kkogw4occgc48w_rails-data:/app/storage'
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - '--spider'
+        - '-q'
+        - 'http://127.0.0.1:3000'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    container_name: chatwoot-z88gg84880kkogw4occgc48w
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=19
+      - coolify.type=service
+      - coolify.name=chatwoot-z88gg84880kkogw4occgc48w
+      - coolify.resourceName=chatwoot-z88gg84880kkogw4occgc48w
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=chatwoot
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=26
+      - coolify.service.subType=application
+      - coolify.service.subName=chatwoot
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-z88gg84880kkogw4occgc48w-chatwoot.entryPoints=http
+      - traefik.http.routers.http-0-z88gg84880kkogw4occgc48w-chatwoot.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-z88gg84880kkogw4occgc48w-chatwoot.rule=Host(`chatwoot.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-z88gg84880kkogw4occgc48w-chatwoot.entryPoints=https
+      - traefik.http.routers.https-0-z88gg84880kkogw4occgc48w-chatwoot.middlewares=gzip
+      - 'traefik.http.routers.https-0-z88gg84880kkogw4occgc48w-chatwoot.rule=Host(`chatwoot.appexx.me`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-z88gg84880kkogw4occgc48w-chatwoot.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-z88gg84880kkogw4occgc48w-chatwoot.tls=true
+      - traefik.http.services.https-0-z88gg84880kkogw4occgc48w-chatwoot.loadbalancer.server.port=3000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://chatwoot.appexx.me'
+      - caddy_ingress_network=z88gg84880kkogw4occgc48w
+    networks:
+      z88gg84880kkogw4occgc48w: null
+      coolify: null
+    env_file:
+      - .env
+  sidekiq:
+    image: 'chatwoot/chatwoot:latest'
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SECRET_KEY_BASE: $SERVICE_PASSWORD_CHATWOOT
+      FRONTEND_URL: 'https://chatwoot.appexx.me'
+      DEFAULT_LOCALE: ja
+      FORCE_SSL: 'false'
+      ENABLE_ACCOUNT_SIGNUP: 'false'
+      REDIS_URL: 'redis://redis-z88gg84880kkogw4occgc48w:6379'
+      POSTGRES_DATABASE: '${POSTGRES_DB:-chatwoot}'
+      POSTGRES_HOST: postgres-z88gg84880kkogw4occgc48w
+      POSTGRES_USERNAME: $SERVICE_USER_POSTGRES
+      POSTGRES_PASSWORD: $SERVICE_PASSWORD_POSTGRES
+      RAILS_MAX_THREADS: '5'
+      NODE_ENV: production
+      RAILS_ENV: production
+      INSTALLATION_ENV: docker
+      COOLIFY_RESOURCE_UUID: z88gg84880kkogw4occgc48w
+      COOLIFY_CONTAINER_NAME: sidekiq-z88gg84880kkogw4occgc48w
+      SERVICE_NAME_CHATWOOT: chatwoot
+      SERVICE_NAME_SIDEKIQ: sidekiq
+      SERVICE_NAME_POSTGRES: postgres
+      SERVICE_NAME_REDIS: redis
+    command:
+      - bundle
+      - exec
+      - sidekiq
+      - '-C'
+      - config/sidekiq.yml
+    volumes:
+      - 'z88gg84880kkogw4occgc48w_rails-data:/app/storage'
+    container_name: sidekiq-z88gg84880kkogw4occgc48w
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=19
+      - coolify.type=service
+      - coolify.name=sidekiq-z88gg84880kkogw4occgc48w
+      - coolify.resourceName=chatwoot-z88gg84880kkogw4occgc48w
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=sidekiq
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=27
+      - coolify.service.subType=application
+      - coolify.service.subName=sidekiq
+    networks:
+      z88gg84880kkogw4occgc48w: null
+    env_file:
+      - .env
+  postgres:
+    image: 'pgvector/pgvector:pg12'
+    restart: always
+    volumes:
+      - 'z88gg84880kkogw4occgc48w_postgres-data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_DB: '${POSTGRES_DB:-chatwoot}'
+      POSTGRES_USER: $SERVICE_USER_POSTGRES
+      POSTGRES_PASSWORD: $SERVICE_PASSWORD_POSTGRES
+      COOLIFY_RESOURCE_UUID: z88gg84880kkogw4occgc48w
+      COOLIFY_CONTAINER_NAME: postgres-z88gg84880kkogw4occgc48w
+      SERVICE_NAME_CHATWOOT: chatwoot
+      SERVICE_NAME_SIDEKIQ: sidekiq
+      SERVICE_NAME_POSTGRES: postgres
+      SERVICE_NAME_REDIS: redis
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    container_name: postgres-z88gg84880kkogw4occgc48w
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=19
+      - coolify.type=service
+      - coolify.name=postgres-z88gg84880kkogw4occgc48w
+      - coolify.resourceName=chatwoot-z88gg84880kkogw4occgc48w
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=postgres
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=14
+      - coolify.service.subType=database
+      - coolify.service.subName=postgres
+    networks:
+      z88gg84880kkogw4occgc48w: null
+    env_file:
+      - .env
+  redis:
+    image: 'redis:alpine'
+    restart: always
+    command: "redis-server --requirepass ''"
+    volumes:
+      - 'z88gg84880kkogw4occgc48w_redis-data:/data'
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - PING
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    container_name: redis-z88gg84880kkogw4occgc48w
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.463
+      - coolify.serviceId=19
+      - coolify.type=service
+      - coolify.name=redis-z88gg84880kkogw4occgc48w
+      - coolify.resourceName=chatwoot-z88gg84880kkogw4occgc48w
+      - coolify.projectName=my-first-project
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=15
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+    networks:
+      z88gg84880kkogw4occgc48w: null
+    environment:
+      COOLIFY_RESOURCE_UUID: z88gg84880kkogw4occgc48w
+      COOLIFY_CONTAINER_NAME: redis-z88gg84880kkogw4occgc48w
+      SERVICE_NAME_CHATWOOT: chatwoot
+      SERVICE_NAME_SIDEKIQ: sidekiq
+      SERVICE_NAME_POSTGRES: postgres
+      SERVICE_NAME_REDIS: redis
+    env_file:
+      - .env
+volumes:
+  z88gg84880kkogw4occgc48w_rails-data:
+    name: z88gg84880kkogw4occgc48w_rails-data
+  z88gg84880kkogw4occgc48w_postgres-data:
+    name: z88gg84880kkogw4occgc48w_postgres-data
+  z88gg84880kkogw4occgc48w_redis-data:
+    name: z88gg84880kkogw4occgc48w_redis-data
+networks:
+  z88gg84880kkogw4occgc48w:
+    name: z88gg84880kkogw4occgc48w
+    external: true
+  coolify:
+    external: true
